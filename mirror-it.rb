@@ -45,25 +45,25 @@ mirror_name = ENV['MIRROR_NAME']
 
 # import all keys
 repositories.each { |repo|
-  next if !repo.key
-  system "gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keys.gnupg.net --recv-keys #{repo.key}"
+  next unless repo.has_key?("key")
+  system "gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keys.gnupg.net --recv-keys #{repo['key']}"
 }
 
 # create mirror
 repositories.each { |repo|
-  system "aptly -architectures=\"amd64,i386\" -ignore-signatures=true  mirror create #{repo.name} #{repo.ppa}"
+  system "aptly -architectures=\"amd64,i386\" -ignore-signatures=true  mirror create #{repo['name']} #{repo['ppa']}"
 }
 
 # update local copy
 repositories.each { |repo|
-  system "aptly mirror update #{repo.name}"
+  system "aptly mirror update #{repo['name']}"
 }
 
 system "aptly repo create #{mirror_name}"
 
 # import into local mirror
 repositories.each { |repo|
-  system "aptly repo import #{repo.name} #{mirror_name} \"Name (~ .*)\""
+  system "aptly repo import #{repo['name']} #{mirror_name} \"Name (~ .*)\""
 }
 
 #FIXME skip-signing sucks
