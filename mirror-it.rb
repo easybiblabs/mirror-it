@@ -1,4 +1,6 @@
 #!/usr/local/bin/ruby
+require "pty"
+require "expect"
 
 repositories = [
   {
@@ -59,12 +61,34 @@ repositories.each { |repo|
   system "aptly mirror update #{repo['name']}"
 }
 
-system "aptly repo create #{mirror_name}"
+system "aptly repo show #{mirror_name}"
 
-# import into local mirror
-repositories.each { |repo|
-  system "aptly repo import #{repo['name']} #{mirror_name} \"Name (~ .*)\""
-}
+if $?.exitstatus == 0
+  puts "#{mirror_name} exists, updating"
+  PTY.spawn("aptly publish update precise #{ENV['S3_APT_MIRROR']}") { | stdin, stdout, pid |
+    begin
+     stdin.expect(/Enter passphrase:/)
+     stdout.write("#{ENV['SIGNING_PASS']}\n")
+     stdin.expect(/Enter passphrase:/)
+     stdout.write("#{ENV['SIGNING_PASS']}\n")
+    rescue Errno::EIO
+    end
+  }
+else
+  puts "initializing #{mirror_name}"
+  system "aptly repo create #{mirror_name}"
 
-#FIXME skip-signing sucks
-system "aptly -skip-signing -distribution=precise publish repo #{mirror_name} #{ENV['S3_APT_MIRROR']}"
+  # import into local mirror
+  repositories.each { |repo|
+    system "aptly repo import #{repo['name']} #{mirror_name} \"Name (~ .*)\""
+  }
+  PTY.spawn("aptly -distribution=precise publish repo #{mirror_name} #{ENV['S3_APT_MIRROR']}") { | stdin, stdout, pid |
+    begin
+     stdin.expect(/Enter passphrase:/)
+     stdout.write("#{ENV['SIGNING_PASS']}\n")
+     stdin.expect(/Enter passphrase:/)
+     stdout.write("#{ENV['SIGNING_PASS']}\n")
+    rescue Errno::EIO
+    end
+  }
+end
