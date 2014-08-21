@@ -43,17 +43,20 @@ repositories = [
   },
   {
     "name" => "hhvm",
-    "ppa" => "http://dl.hhvm.com/ubuntu",
+    "archive" => "http://dl.hhvm.com/ubuntu",
+    "dist" => "trusty",
     "key" => "1BE7A449"
   },
   {
     "name" => "percona",
-    "ppa" => "http://repo.percona.com/apt",
+    "archive" => "http://repo.percona.com/apt",
+    "dist" => "trusty",
     "key" => "CD2EFD2A"
   },
   {
     "name" => "qafoo",
-    "ppa" => "https://packagecloud.io/qafoo/profiler/ubuntu/",
+    "archive" => "https://packagecloud.io/qafoo/profiler/ubuntu/",
+    "dist" => "trusty",
     "key" => "D59097AB"
   }
 ]
@@ -68,7 +71,11 @@ repositories.each { |repo|
 
 # create mirror
 repositories.each { |repo|
-  system "aptly -architectures=\"amd64,i386\" -ignore-signatures=true  mirror create #{repo['name']} #{repo['ppa']}"
+  if repo.has_key?("ppa")
+    system "aptly -architectures=\"amd64,i386\" -ignore-signatures=true  mirror create #{repo['name']} #{repo['ppa']}"
+  else
+    system "aptly -architectures=\"amd64,i386\" -ignore-signatures=true  mirror create #{repo['name']} #{repo['archive']} #{repo['dist']}"
+  end
 }
 
 # update local copy
