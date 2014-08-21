@@ -52,12 +52,6 @@ repositories = [
     "archive" => "http://repo.percona.com/apt",
     "dist" => "trusty",
     "key" => "CD2EFD2A"
-  },
-  {
-    "name" => "qafoo",
-    "archive" => "https://packagecloud.io/qafoo/profiler/ubuntu/",
-    "dist" => "trusty",
-    "key" => "D59097AB"
   }
 ]
 
@@ -72,9 +66,9 @@ repositories.each { |repo|
 # create mirror
 repositories.each { |repo|
   if repo.has_key?("ppa")
-    system "aptly -architectures=\"amd64,i386\" -ignore-signatures=true  mirror create #{repo['name']} #{repo['ppa']}"
+    system "aptly -architectures=\"amd64,i386\" mirror create #{repo['name']} #{repo['ppa']}"
   else
-    system "aptly -architectures=\"amd64,i386\" -ignore-signatures=true  mirror create #{repo['name']} #{repo['archive']} #{repo['dist']}"
+    system "aptly -architectures=\"amd64,i386\" mirror create #{repo['name']} #{repo['archive']} #{repo['dist']}"
   end
 }
 
