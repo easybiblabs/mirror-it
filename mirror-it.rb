@@ -42,12 +42,6 @@ repositories = [
     "archive" => "http://dl.hhvm.com/ubuntu",
     "dist" => "trusty",
     "key" => "1BE7A449"
-  },
-  {
-    "name" => "percona",
-    "archive" => "http://repo.percona.com/apt",
-    "dist" => "trusty",
-    "key" => "CD2EFD2A"
   }
 ]
 
