@@ -5,40 +5,36 @@ require "expect"
 repositories = [
   {
     "name" => "easybib-php55",
-    "ppa" => "ppa:easybib/php55",
+    "archive" => "http://ppa.launchpad.net/easybib/php55/ubuntu",
+    "dist" => "trusty",
     "key" => "66E3A9B7"
   },
   {
-    "name" => "dotcloud-docker",
-    "ppa" => "ppa:dotcloud/lxc-docker",
-    "key" => "63561DC6"
-  },
-  {
-    "name" => "mapnik-boost",
-    "ppa" => "ppa:mapnik/boost",
-    "key" => "5D50B6BA"
-  },
-  {
     "name" => "chrislea-noderemote",
-    "ppa" => "ppa:easybib/remote-mirrors",
+    "archive" => "http://ppa.launchpad.net/easybib/remote-mirrors/ubuntu",
+    "dist" => "trusty"
   },
   {
     "name" => "chrislea-nodedev",
-    "ppa" => "ppa:chris-lea/node.js-devel",
+    "archive" => "http://ppa.launchpad.net/chris-lea/node.js-devel/ubuntu",
+    "dist" => "trusty",
     "key" => "C7917B12"
   },
   {
     "name" => "chrislea-redis",
-    "ppa" => "ppa:chris-lea/redis-server"
+    "archive" => "http://ppa.launchpad.net/chris-lea/redis-server/ubuntu",
+    "dist" => "trusty"
   },
   {
     "name" => "nijel-phpmyadmin",
-    "ppa" => "ppa:nijel/phpmyadmin",
+    "archive" => "http://ppa.launchpad.net/nijel/phpmyadmin/ubuntu",
+    "dist" => "trusty",
     "key" => "06ED541C"
   },
   {
     "name" => "brightbox-ruby",
-    "ppa" => "ppa:brightbox/ruby-ng",
+    "archive" => "http://ppa.launchpad.net/brightbox/ruby-ng/ubuntu",
+    "dist" => "trusty",
     "key" => "C3173AA6"
   },
   {
