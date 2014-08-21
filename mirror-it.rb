@@ -5,41 +5,43 @@ require "expect"
 repositories = [
   {
     "name" => "easybib-php55",
-    "ppa" => "ppa:easybib/php55",
+    "archive" => "http://ppa.launchpad.net/easybib/php55/ubuntu",
+    "dist" => "trusty",
     "key" => "66E3A9B7"
   },
   {
-    "name" => "dotcloud-docker",
-    "ppa" => "ppa:dotcloud/lxc-docker",
-    "key" => "63561DC6"
-  },
-  {
-    "name" => "mapnik-boost",
-    "ppa" => "ppa:mapnik/boost",
-    "key" => "5D50B6BA"
-  },
-  {
     "name" => "chrislea-noderemote",
-    "ppa" => "ppa:easybib/remote-mirrors",
+    "archive" => "http://ppa.launchpad.net/easybib/remote-mirrors/ubuntu",
+    "dist" => "trusty"
   },
   {
     "name" => "chrislea-nodedev",
-    "ppa" => "ppa:chris-lea/node.js-devel",
+    "archive" => "http://ppa.launchpad.net/chris-lea/node.js-devel/ubuntu",
+    "dist" => "trusty",
     "key" => "C7917B12"
   },
   {
     "name" => "chrislea-redis",
-    "ppa" => "ppa:chris-lea/redis-server"
+    "archive" => "http://ppa.launchpad.net/chris-lea/redis-server/ubuntu",
+    "dist" => "trusty"
   },
   {
     "name" => "nijel-phpmyadmin",
-    "ppa" => "ppa:nijel/phpmyadmin",
+    "archive" => "http://ppa.launchpad.net/nijel/phpmyadmin/ubuntu",
+    "dist" => "trusty",
     "key" => "06ED541C"
   },
   {
     "name" => "brightbox-ruby",
-    "ppa" => "ppa:brightbox/ruby-ng",
+    "archive" => "http://ppa.launchpad.net/brightbox/ruby-ng/ubuntu",
+    "dist" => "trusty",
     "key" => "C3173AA6"
+  },
+  {
+    "name" => "hhvm",
+    "archive" => "http://dl.hhvm.com/ubuntu",
+    "dist" => "trusty",
+    "key" => "1BE7A449"
   }
 ]
 
@@ -53,7 +55,11 @@ repositories.each { |repo|
 
 # create mirror
 repositories.each { |repo|
-  system "aptly -architectures=\"amd64,i386\" -ignore-signatures=true  mirror create #{repo['name']} #{repo['ppa']}"
+  if repo.has_key?("ppa")
+    system "aptly -architectures=\"amd64,i386\" mirror create #{repo['name']} #{repo['ppa']}"
+  else
+    system "aptly -architectures=\"amd64,i386\" mirror create #{repo['name']} #{repo['archive']} #{repo['dist']}"
+  end
 }
 
 # update local copy
@@ -65,7 +71,7 @@ system "aptly repo show #{mirror_name}"
 
 if $?.exitstatus == 0
   puts "#{mirror_name} exists, updating"
-  PTY.spawn("aptly publish update precise #{ENV['S3_APT_MIRROR']}") { | stdin, stdout, pid |
+  PTY.spawn("aptly publish update trusty #{ENV['S3_APT_MIRROR']}") { | stdin, stdout, pid |
     begin
      stdin.expect(/Enter passphrase:/)
      stdout.write("#{ENV['SIGNING_PASS']}\n")
@@ -82,7 +88,7 @@ else
   repositories.each { |repo|
     system "aptly repo import #{repo['name']} #{mirror_name} \"Name (~ .*)\""
   }
-  PTY.spawn("aptly -distribution=precise publish repo #{mirror_name} #{ENV['S3_APT_MIRROR']}") { | stdin, stdout, pid |
+  PTY.spawn("aptly -distribution=trusty publish repo #{mirror_name} #{ENV['S3_APT_MIRROR']}") { | stdin, stdout, pid |
     begin
      stdin.expect(/Enter passphrase:/)
      stdout.write("#{ENV['SIGNING_PASS']}\n")
