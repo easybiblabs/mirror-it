@@ -40,6 +40,21 @@ repositories = [
     "name" => "brightbox-ruby",
     "ppa" => "ppa:brightbox/ruby-ng",
     "key" => "C3173AA6"
+  },
+  {
+    "name" => "hhvm",
+    "ppa" => "http://dl.hhvm.com/ubuntu",
+    "key" => "1BE7A449"
+  },
+  {
+    "name" => "percona",
+    "ppa" => "http://repo.percona.com/apt",
+    "key" => "CD2EFD2A"
+  },
+  {
+    "name" => "qafoo",
+    "ppa" => "https://packagecloud.io/qafoo/profiler/ubuntu/",
+    "key" => "D59097AB"
   }
 ]
 
@@ -65,7 +80,7 @@ system "aptly repo show #{mirror_name}"
 
 if $?.exitstatus == 0
   puts "#{mirror_name} exists, updating"
-  PTY.spawn("aptly publish update precise #{ENV['S3_APT_MIRROR']}") { | stdin, stdout, pid |
+  PTY.spawn("aptly publish update trusty #{ENV['S3_APT_MIRROR']}") { | stdin, stdout, pid |
     begin
      stdin.expect(/Enter passphrase:/)
      stdout.write("#{ENV['SIGNING_PASS']}\n")
@@ -82,7 +97,7 @@ else
   repositories.each { |repo|
     system "aptly repo import #{repo['name']} #{mirror_name} \"Name (~ .*)\""
   }
-  PTY.spawn("aptly -distribution=precise publish repo #{mirror_name} #{ENV['S3_APT_MIRROR']}") { | stdin, stdout, pid |
+  PTY.spawn("aptly -distribution=trusty publish repo #{mirror_name} #{ENV['S3_APT_MIRROR']}") { | stdin, stdout, pid |
     begin
      stdin.expect(/Enter passphrase:/)
      stdout.write("#{ENV['SIGNING_PASS']}\n")
