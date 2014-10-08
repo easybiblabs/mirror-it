@@ -1,6 +1,7 @@
 #!/usr/local/bin/ruby
 require 'pty'
 require 'expect'
+require 'English'
 
 repositories = [
   {
