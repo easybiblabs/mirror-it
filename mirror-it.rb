@@ -43,6 +43,12 @@ repositories = [
     'archive' => 'http://dl.hhvm.com/ubuntu',
     'dist' => 'trusty',
     'key' => '1BE7A449'
+  },
+  {
+    'name' => 'qafoo',
+    'archive' => 'https://s3-eu-west-1.amazonaws.com/qafoo-profiler/packages',
+    'dist' => 'debian',
+    'key' => 'EEB5E8F4'
   }
 ]
 
