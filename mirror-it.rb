@@ -72,7 +72,7 @@ system "aptly repo show #{mirror_name}"
 if $CHILD_STATUS.exitstatus == 0
   puts "#{mirror_name} exists, updating"
 
-  system "aptly publish update trusty #{ENV['S3_APT_MIRROR']} -passphrase='#{ENV['SIGNING_PASS']}'"
+  system "aptly publish update -passphrase='#{ENV['SIGNING_PASS']}' trusty #{ENV['S3_APT_MIRROR']}"
 else
   puts "initializing #{mirror_name}"
   system "aptly repo create #{mirror_name}"
