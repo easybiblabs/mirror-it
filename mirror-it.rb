@@ -78,18 +78,8 @@ system "aptly repo show #{mirror_name}"
 
 if $CHILD_STATUS.exitstatus == 0
   puts "#{mirror_name} exists, updating"
-  PTY.spawn("aptly publish update trusty #{ENV['S3_APT_MIRROR']}") do | stdin, stdout, pid |
-    begin
-      stdin.expect(/Enter passphrase:/) do
-        stdout.write("#{ENV['SIGNING_PASS']}\n")
-      end
-      stdin.expect(/Enter passphrase:/) do
-        stdout.write("#{ENV['SIGNING_PASS']}\n")
-      end
-      puts stdin.gets
-    rescue Errno::EIO
-    end
-  end
+
+  system "aptly publish update -passphrase='#{ENV['SIGNING_PASS']}' trusty #{ENV['S3_APT_MIRROR']}"
 else
   puts "initializing #{mirror_name}"
   system "aptly repo create #{mirror_name}"
@@ -98,16 +88,6 @@ else
   repositories.each do |repo|
     system "aptly repo import #{repo['name']} #{mirror_name} \"Name (~ .*)\""
   end
-  PTY.spawn("aptly -distribution=trusty publish repo #{mirror_name} #{ENV['S3_APT_MIRROR']}") do | stdin, stdout, pid |
-    begin
-      stdin.expect(/Enter passphrase:/) do
-        stdout.write("#{ENV['SIGNING_PASS']}\n")
-      end
-      stdin.expect(/Enter passphrase:/) do
-        stdout.write("#{ENV['SIGNING_PASS']}\n")
-      end
-      puts stdin.gets
-    rescue Errno::EIO
-    end
-  end
+
+  system "aptly -distribution=trusty publish repo -passphrase='#{ENV['SIGNING_PASS']}' #{mirror_name} #{ENV['S3_APT_MIRROR']}"
 end
