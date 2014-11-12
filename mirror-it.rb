@@ -2,6 +2,7 @@
 require 'pty'
 require 'expect'
 require 'English'
+require 'date'
 
 repositories = [
   {
@@ -54,40 +55,48 @@ repositories = [
 
 mirror_name = ENV['MIRROR_NAME']
 
-# import all keys
-repositories.each do |repo|
-  next unless repo.key?('key')
-  system "gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keys.gnupg.net --recv-keys #{repo['key']}"
-end
+ymd = DateTime.now.strftime('%F')
+repos = ''
 
-# create mirror
 repositories.each do |repo|
-  if repo.key?('ppa')
-    system "aptly -architectures=\"amd64,i386\" mirror create #{repo['name']} #{repo['ppa']}"
-  else
-    system "aptly -architectures=\"amd64,i386\" mirror create #{repo['name']} #{repo['archive']} #{repo['dist']}"
+  system "aptly repo show #{mirror_name}"
+  unless $CHILD_STATUS.exitstatus == 0
+    # no such mirror
+    # import gpg key
+    if repo.key?('key')
+     system "gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keys.gnupg.net --recv-keys #{repo['key']}"
+    end
+    # create mirror
+    if repo.key?('ppa')
+      system "aptly -architectures=\"amd64,i386\" mirror create #{repo['name']} #{repo['ppa']}"
+    else
+      system "aptly -architectures=\"amd64,i386\" mirror create #{repo['name']} #{repo['archive']} #{repo['dist']}"
+    end
   end
-end
 
-# update local copy
-repositories.each do |repo|
   system "aptly mirror update #{repo['name']}"
+  snapshot="snap-#{repo['name']}-#{ymd}"
+  
+  system "aptly snapshot create #{snapshot} from mirror #{repo['name']}"
+  repos += ' ' + snapshot
 end
 
-system "aptly repo show #{mirror_name}"
+system "aptly snapshot merge packages-#{ymd} #{repos}"
 
+system " aptly publish list |grep #{mirror_name}"
 if $CHILD_STATUS.exitstatus == 0
-  puts "#{mirror_name} exists, updating"
-
-  system "aptly publish update -passphrase='#{ENV['SIGNING_PASS']}' trusty #{ENV['S3_APT_MIRROR']}"
+  # published snapshot exists, just update
+  system "aptly publish switch -passphrase='#{ENV['SIGNING_PASS']}' -distribution='trusty' packages-#{ymd} #{ENV['S3_APT_MIRROR']}"
 else
-  puts "initializing #{mirror_name}"
-  system "aptly repo create #{mirror_name}"
-
-  # import into local mirror
-  repositories.each do |repo|
-    system "aptly repo import #{repo['name']} #{mirror_name} \"Name (~ .*)\""
-  end
-
-  system "aptly -distribution=trusty publish repo -passphrase='#{ENV['SIGNING_PASS']}' #{mirror_name} #{ENV['S3_APT_MIRROR']}"
+  system "aptly publish snapshot -passphrase='#{ENV['SIGNING_PASS']}' -distribution='trusty' packages-#{ymd} #{ENV['S3_APT_MIRROR']}"
 end
+
+#repositories.each do |repo|
+#  snapshot="snap-#{repo['name']}-#{ymd}"
+#  system "aptly snapshot drop -force #{snapshot}"
+#end
+# FIXME ERROR: unable to drop: snapshot is published
+# We should drop all but current
+#system "aptly snapshot drop -force packages-#{ymd}"
+
+system "aptly db cleanup"
