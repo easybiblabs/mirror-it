@@ -86,7 +86,7 @@ system "aptly snapshot merge packages-#{ymd} #{repos}"
 system " aptly publish list |grep #{mirror_name}"
 if $CHILD_STATUS.exitstatus == 0
   # published snapshot exists, just update
-  system "aptly publish switch -passphrase='#{ENV['SIGNING_PASS']}' -distribution='trusty' packages-#{ymd} #{ENV['S3_APT_MIRROR']}"
+  system "aptly publish switch -passphrase='#{ENV['SIGNING_PASS']}' trusty #{ENV['S3_APT_MIRROR']}  packages-#{ymd}"
 else
   system "aptly publish snapshot -passphrase='#{ENV['SIGNING_PASS']}' -distribution='trusty' packages-#{ymd} #{ENV['S3_APT_MIRROR']}"
 end
