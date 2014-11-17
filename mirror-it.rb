@@ -59,7 +59,7 @@ ymd = DateTime.now.strftime('%F')
 repos = ''
 
 repositories.each do |repo|
-  system "aptly repo show #{mirror_name}"
+  system "aptly mirror show #{repo['name']}"
   unless $CHILD_STATUS.exitstatus == 0
     # no such mirror
     # import gpg key
@@ -83,7 +83,7 @@ end
 
 system "aptly snapshot merge packages-#{ymd} #{repos}"
 
-system " aptly publish list |grep #{mirror_name}"
+system "aptly publish list |grep #{mirror_name}"
 if $CHILD_STATUS.exitstatus == 0
   # published snapshot exists, just update
   system "aptly publish switch -passphrase='#{ENV['SIGNING_PASS']}' trusty #{ENV['S3_APT_MIRROR']}  packages-#{ymd}"
