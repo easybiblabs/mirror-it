@@ -5,6 +5,7 @@ require 'English'
 require 'date'
 
 debug = false
+quiet = true
 
 repositories = [
   {
@@ -65,7 +66,7 @@ repositories.each do |repo|
   puts output if debug
 
   if $CHILD_STATUS.exitstatus == 0
-    puts "mirror #{repo['name']} already exists"
+    puts "mirror #{repo['name']} already exists" unless quiet
   else
     # no such mirror
     # import gpg key
@@ -83,7 +84,7 @@ repositories.each do |repo|
     end
   end
 
-  output = `aptly mirror update #{repo['name']}`
+  output = `aptly mirror update #{repo['name']} 2>&1`
   puts output if debug
 
   snapshot = "snap-#{repo['name']}-#{ymd}"
@@ -92,7 +93,7 @@ repositories.each do |repo|
   puts output if debug
 
   if $CHILD_STATUS.exitstatus == 0
-    puts "snapshot #{snapshot} already exists, skipping"
+    puts "snapshot #{snapshot} already exists, skipping" unless quiet
   else
     output = `aptly snapshot create #{snapshot} from mirror #{repo['name']}`
     puts output if debug
@@ -104,7 +105,7 @@ output = `aptly snapshot show packages-#{ymd}`
 puts output if debug
 
 if $CHILD_STATUS.exitstatus == 0
-  puts "merged snapshot packages-#{ymd} already exists"
+  puts "merged snapshot packages-#{ymd} already exists" unless quiet
 else
   output = `aptly snapshot merge packages-#{ymd} #{repos}`
   puts output if debug
@@ -115,28 +116,24 @@ output = `aptly publish list |grep #{ENV['S3_APT_MIRROR']}`
 puts output if debug
 
 if $CHILD_STATUS.exitstatus == 0
-  puts 'switching merged snapshot to todays packages'
+  puts 'switching merged snapshot to todays packages' unless quiet
   # published snapshot exists, just update
-  output = `aptly publish switch -passphrase='#{ENV['SIGNING_PASS']}' trusty #{ENV['S3_APT_MIRROR']}  packages-#{ymd}`
+  output = `aptly publish switch -passphrase='#{ENV['SIGNING_PASS']}' trusty #{ENV['S3_APT_MIRROR']} packages-#{ymd} 2>&1`
   puts output if debug
 
 else
   puts 'publishing snapshot'
-  output = `aptly publish snapshot -passphrase='#{ENV['SIGNING_PASS']}' -distribution='trusty' packages-#{ymd} #{ENV['S3_APT_MIRROR']}`
+  output = `aptly publish snapshot -passphrase='#{ENV['SIGNING_PASS']}' -distribution='trusty' packages-#{ymd} #{ENV['S3_APT_MIRROR']} 2>&1`
   puts output if debug
 
 end
 
-# repositories.each do |repo|
-#  snapshot="snap-#{repo['name']}-#{ymd}"
-#  output = `aptly snapshot drop -force #{snapshot}`
-puts output if debug
+oldsnaps = `aptly snapshot list|tail -n +2|head -n -2|grep -v #{ymd}`
 
-# end
-# FIXME: ERROR: unable to drop: snapshot is published
-# We should drop all but current
-# output = `aptly snapshot drop -force packages-#{ymd}`
-puts output if debug
+oldsnaps.scan(/ \* \[([0-9a-z-]+)\]/).each do |line|
+  output = `aptly snapshot drop #{line.first}`
+  puts output if debug
+end
 
 output = `aptly db cleanup`
 puts output if debug
