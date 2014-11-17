@@ -111,7 +111,7 @@ else
 
 end
 
-output = `aptly publish list |grep #{mirror_name}`
+output = `aptly publish list |grep #{ENV['S3_APT_MIRROR']}`
 puts output if debug
 
 if $CHILD_STATUS.exitstatus == 0
