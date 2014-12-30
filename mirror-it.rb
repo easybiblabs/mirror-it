@@ -53,6 +53,12 @@ repositories = [
     'archive' => 'https://s3-eu-west-1.amazonaws.com/qafoo-profiler/packages',
     'dist' => 'debian',
     'key' => 'EEB5E8F4'
+  },
+  {
+    'name' => 'apache-couch-stable',
+    'archive' => 'http://ppa.launchpad.net/couchdb/stable/ubuntu',
+    'dist' => 'trusty',
+    'key' => 'C17EAB57'
   }
 ]
 
