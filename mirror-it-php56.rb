@@ -13,8 +13,8 @@ quiet = true
 
 repositories = [
   {
-    'name' => 'easybib-php55',
-    'archive' => 'http://ppa.launchpad.net/easybib/php55/ubuntu',
+    'name' => 'easybib-php56',
+    'archive' => 'http://ppa.launchpad.net/easybib/php56/ubuntu',
     'dist' => 'trusty',
     'key' => '66E3A9B7'
   },
