@@ -67,4 +67,4 @@ repositories = [
 ]
 
 mirror = Mirror.new(quiet, debug)
-mirror.run(repositories, ENV['MIRROR_NAME'], ENV['S3_APT_MIRROR'], ENV['SIGNING_PASS'])
+mirror.run(repositories, ENV['S3_APT_MIRROR'], ENV['SIGNING_PASS'])

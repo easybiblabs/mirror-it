@@ -23,7 +23,7 @@ class Mirror
     $CHILD_STATUS.exitstatus
   end
 
-  def run(repositories, _mirror_name, s3_apt_mirror, signing_pass)
+  def run(repositories, s3_apt_mirror, signing_pass)
     ymd = DateTime.now.strftime('%F')
     repos = ''
 
