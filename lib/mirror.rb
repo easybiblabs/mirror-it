@@ -20,26 +20,45 @@ class Mirror
     $CHILD_STATUS.exitstatus
   end
 
-  def run(repositories, mirror_uri, password)
+  def run(repositories, mirror_uri_prefix, password)
     @ymd = DateTime.now.strftime('%F')
-    repos = update_snapshots(repositories)
-    merged_snapshot = "packages-#{ymd}"
-    create_merged_snapshot(merged_snapshot, repos)
 
-    publish_merged_snapshot(merged_snapshot, mirror_uri, password)
+    update_snapshots(repositories)
+
+    merged_mirrors = generate_merged_mirror_list(repositories)
+
+    update_merged_mirrors(merged_mirrors,  mirror_uri_prefix, password)
 
     remove_old_snapshots
   end
 
-  def update_snapshots(repositories)
-    repos = ''
+  def update_merged_mirrors(merged_mirrors,  mirror_uri_prefix, password)
+    merged_mirrors.each do |merged_mirror, repositories|
+      repos = repositories.join(' ')
+      mirror_uri = mirror_uri_prefix + '-' + merged_mirror
+      merged_snapshot_name = merged_mirror + '-' + @ymd
+
+      create_merged_snapshot(merged_snapshot_name, repos)
+      publish_merged_snapshot(merged_mirror, mirror_uri, password)
+    end
+  end
+
+  def generate_merged_mirror_list(repositories)
+    merged_mirrors = {}
 
     repositories.each do |repo|
-      mirror_create(repo) unless mirror_exists?(repo['name'])
-      snapshot = create_snapshot(repo['name'])
-      repos += ' ' + snapshot
+      merged_mirrors[repo['target']] = [] if merged_mirrors[repo['target']].nil?
+      merged_mirrors[repo['target']].push(repo['name'])
     end
-    repos
+
+    merged_mirrors
+  end
+
+  def update_snapshots(repositories)
+    repositories.each do |repo|
+      mirror_create(repo) unless mirror_exists?(repo['name'])
+      create_snapshot(repo['name'])
+    end
   end
 
   def remove_old_snapshots
@@ -50,7 +69,7 @@ class Mirror
     aptly('db cleanup')
   end
 
-  def publish_merged_snapshot(packages, s3_apt_mirror, signing_pass)
+  def publish_merged_mirror(packages, s3_apt_mirror, signing_pass)
     status = aptly("publish list |grep #{s3_apt_mirror}")
 
     if status == 0
