@@ -27,12 +27,12 @@ class Mirror
 
     merged_mirrors = generate_merged_mirror_list(repositories)
 
-    update_merged_mirrors(merged_mirrors,  mirror_uri_prefix, password)
+    update_merged_mirrors(merged_mirrors, mirror_uri_prefix, password)
 
     remove_old_snapshots
   end
 
-  def update_merged_mirrors(merged_mirrors,  mirror_uri_prefix, password)
+  def update_merged_mirrors(merged_mirrors, mirror_uri_prefix, password)
     merged_mirrors.each do |merged_mirror, repositories|
       repos = repositories.join(' ')
       mirror_uri = mirror_uri_prefix + '-' + merged_mirror
@@ -69,7 +69,7 @@ class Mirror
     aptly('db cleanup')
   end
 
-  def publish_merged_mirror(packages, s3_apt_mirror, signing_pass)
+  def publish_merged_snapshot(packages, s3_apt_mirror, signing_pass)
     status = aptly("publish list |grep #{s3_apt_mirror}")
 
     if status == 0
@@ -106,11 +106,11 @@ class Mirror
     snapshot
   end
 
-  def mirror_exists?(_name)
-    status = aptly("mirror show #{repo['name']}")
+  def mirror_exists?(name)
+    status = aptly("mirror show #{name}")
 
     if status == 0
-      puts "mirror #{repo['name']} already exists" unless @quiet
+      puts "mirror #{name} already exists" unless @quiet
       return true
     end
     false
