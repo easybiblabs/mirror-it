@@ -11,7 +11,8 @@ sudo: false
 cache: bundler
 
 before_script:
-  - gem install rubocop
+  - bundle install
 
 script:
-  - rubocop
+  - bundle exec rake rubocop
+  - bundle exec rake test

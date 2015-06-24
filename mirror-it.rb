@@ -1,4 +1,4 @@
-#!/usr/local/bin/ruby
+#!/usr/bin/env ruby
 
 $LOAD_PATH.unshift File.dirname(__FILE__)
 
