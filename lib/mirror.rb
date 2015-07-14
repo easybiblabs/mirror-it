@@ -4,9 +4,10 @@ require 'English'
 require 'date'
 
 class Mirror
-  def initialize(quiet = true, debug = false)
+  def initialize(quiet = true, debug = false, distribution = 'trusty')
     @debug = debug
     @quiet = quiet
+    @distribution = distribution
     @aptly = 'aptly'
   end
 
@@ -75,11 +76,11 @@ class Mirror
     if status == 0
       puts 'switching merged snapshot to todays packages' unless @quiet
       # published snapshot exists, just update
-      return aptly("publish switch -passphrase='#{signing_pass}' trusty #{s3_apt_mirror} #{packages} 2>&1")
+      return aptly("publish switch -force-overwrite=true -passphrase='#{signing_pass}' #{@distribution} #{s3_apt_mirror} #{packages} 2>&1")
     end
 
     puts 'publishing snapshot' unless @quiet
-    aptly("publish snapshot -passphrase='#{signing_pass}' -distribution='trusty' #{packages} #{s3_apt_mirror} 2>&1")
+    aptly("publish snapshot -force-overwrite=true -passphrase='#{signing_pass}' -distribution='#{@distribution}' #{packages} #{s3_apt_mirror} 2>&1")
   end
 
   def create_merged_snapshot(name, repos)
