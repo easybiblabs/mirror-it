@@ -17,7 +17,7 @@ class Mirror
 
   def call(cmd)
     output = `#{cmd} 2>&1`
-    puts output if @debug
+    puts "-------\n#{cmd}\n#{output}\n" if @debug
     $CHILD_STATUS.exitstatus
   end
 
