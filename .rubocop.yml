@@ -1,5 +1,5 @@
 Metrics/LineLength:
-  Max: 150
+  Enabled: false 
 
 Style/Documentation:
   Enabled: false
