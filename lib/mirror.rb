@@ -35,12 +35,12 @@ class Mirror
 
   def update_merged_mirrors(merged_mirrors, mirror_uri_prefix, password)
     merged_mirrors.each do |merged_mirror, repositories|
-      repos = repositories.join(' ')
-      mirror_uri = mirror_uri_prefix + '-' + merged_mirror
+      repos = 'snap-' + repositories.join("-#{@ymd} snap-") + "-#{@ymd}"
+      mirror_uri = mirror_uri_prefix + '/' + merged_mirror
       merged_snapshot_name = merged_mirror + '-' + @ymd
 
       create_merged_snapshot(merged_snapshot_name, repos)
-      publish_merged_snapshot(merged_mirror, mirror_uri, password)
+      publish_merged_snapshot(merged_snapshot_name, mirror_uri, password)
     end
   end
 
@@ -70,17 +70,17 @@ class Mirror
     aptly('db cleanup')
   end
 
-  def publish_merged_snapshot(packages, s3_apt_mirror, signing_pass)
+  def publish_merged_snapshot(snapshot_name, s3_apt_mirror, signing_pass)
     status = aptly("publish list |grep #{s3_apt_mirror}")
 
     if status == 0
       puts 'switching merged snapshot to todays packages' unless @quiet
       # published snapshot exists, just update
-      return aptly("publish switch -force-overwrite=true -passphrase='#{signing_pass}' #{@distribution} #{s3_apt_mirror} #{packages} 2>&1")
+      return aptly("publish switch -force-overwrite=true -passphrase='#{signing_pass}' #{@distribution} #{s3_apt_mirror} #{snapshot_name} 2>&1")
     end
 
     puts 'publishing snapshot' unless @quiet
-    aptly("publish snapshot -force-overwrite=true -passphrase='#{signing_pass}' -distribution='#{@distribution}' #{packages} #{s3_apt_mirror} 2>&1")
+    aptly("publish snapshot -force-overwrite=true -passphrase='#{signing_pass}' -distribution='#{@distribution}' #{snapshot_name} #{s3_apt_mirror} 2>&1")
   end
 
   def create_merged_snapshot(name, repos)
