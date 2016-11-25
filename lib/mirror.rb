@@ -73,7 +73,7 @@ class Mirror
   def publish_merged_snapshot(snapshot_name, s3_apt_mirror, signing_pass)
     status = aptly("publish list |grep #{s3_apt_mirror}")
 
-    if status == 0
+    if status.zero?
       puts 'switching merged snapshot to todays packages' unless @quiet
       # published snapshot exists, just update
       return aptly("publish switch -force-overwrite=true -passphrase='#{signing_pass}' #{@distribution} #{s3_apt_mirror} #{snapshot_name} 2>&1")
@@ -85,7 +85,7 @@ class Mirror
 
   def create_merged_snapshot(name, repos)
     status = aptly("snapshot show #{name}")
-    if status == 0
+    if status.zero?
       puts "merged snapshot #{name} already exists" unless @quiet
     else
       aptly("snapshot merge #{name} #{repos}")
@@ -99,7 +99,7 @@ class Mirror
 
     status = aptly("snapshot show #{snapshot} >/dev/null")
 
-    if status == 0
+    if status.zero?
       puts "snapshot #{snapshot} already exists, skipping" unless @quiet
     else
       aptly("snapshot create #{snapshot} from mirror #{repo}")
@@ -110,7 +110,7 @@ class Mirror
   def mirror_exists?(name)
     status = aptly("mirror show #{name}")
 
-    if status == 0
+    if status.zero?
       puts "mirror #{name} already exists" unless @quiet
       return true
     end
@@ -123,11 +123,11 @@ class Mirror
       call("gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keys.gnupg.net --recv-keys #{repo['key']}")
     end
     # create mirror
-    if repo.key?('ppa')
-      status = aptly("-architectures=\"amd64,i386\" mirror create #{repo['name']} #{repo['ppa']}")
-    else
-      status = aptly("-architectures=\"amd64,i386\" mirror create #{repo['name']} #{repo['archive']} #{repo['dist']}")
-    end
-    (status == 0)
+    status = if repo.key?('ppa')
+               aptly("-architectures=\"amd64,i386\" mirror create #{repo['name']} #{repo['ppa']}")
+             else
+               aptly("-architectures=\"amd64,i386\" mirror create #{repo['name']} #{repo['archive']} #{repo['dist']}")
+             end
+    status.zero?
   end
 end

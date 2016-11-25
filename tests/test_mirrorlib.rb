@@ -20,7 +20,8 @@ class TestLibMirror < Test::Unit::TestCase
       {
         'name' => 'merge-repo-2',
         'target' => 'm1'
-      }]
+      }
+    ]
     result = Mirror.new.generate_merged_mirror_list(repo)
 
     assert_equal(
