@@ -60,10 +60,10 @@ repositories = [
     'target' => 'remote-mirrors'
   },
   {
-    'name' => 'hhvm',
-    'archive' => 'http://dl.hhvm.com/ubuntu',
+    'name' => 'ondrej-php',
+    'archive' => 'http://ppa.launchpad.net/ondrej/php/ubuntu',
     'dist' => 'trusty',
-    'key' => '1BE7A449',
+    'key' => 'E5267A6C',
     'target' => 'remote-mirrors'
   },
   {
